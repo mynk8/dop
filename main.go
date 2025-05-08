@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+
+	"dop.org/dop/head"
+	"dop.org/dop/tail"
+	"dop.org/dop/watch"
 )
 
 func usage() {
@@ -15,9 +19,8 @@ func usage() {
 
 var (
 	watchWithTime = flag.Bool("wt", false, "Watch the file output with timestamp of each line")
-	watchOutput = flag.String("g", "Hello", "Greet with `greeting`")
-	tailOutput = flag.Bool("r", false, "Greet in Reverse")
-	headOutput = flag.Bool("h", false, "Print the first 5 lines")
+	tailOutput    = flag.Bool("r", false, "Print the last 5 lines")
+	headOutput    = flag.Bool("h", false, "Print the first 5 lines")
 )
 
 func main() {
@@ -26,20 +29,28 @@ func main() {
 
 	flag.Usage = usage
 	flag.Parse()
-	
-	var filename string
-	args := flag.Args()
 
-	if len(args) >= 2 {
+	args := flag.Args()
+	if len(args) != 1 {
+		fmt.Fprintf(os.Stderr, "ERROR: must supply atleast one filename\n")
 		usage()
 	}
+	filename := args[0]
 
-	if len(args) >= 1 {
-		filename = args[0]
+	if *watchWithTime {
+		watch.WatchWithTimestamps(filename)
 	}
 
-	if filename == "" {
-		log.Fatalf("invalid name %q", filename)
+	if *tailOutput {
+		tail.Tail(filename, 5)
 	}
 
+	if *headOutput {
+		head.Head(filename, 5)
+	}
+
+	fmt.Printf("%s <-- arguments supplied\n", filename)
 }
+
+
+
